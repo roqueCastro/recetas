@@ -7,6 +7,11 @@ class App extends StatelessWidget{
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Recetas",
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Colors.cyan,
+        accentColor: Colors.cyan[300]
+      ),
       initialRoute: "/",
       routes: {
         "/": (BuildContext context) => LoginPage(),
