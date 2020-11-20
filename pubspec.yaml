@@ -31,9 +31,10 @@ dependencies:
 
   #capturador de imagenes
   image_picker: ^0.5.0+9
-
   #GET IT
   get_it: ^5.0.1
+  #HTTP
+  http: ^0.12.2
 
 
 dev_dependencies:

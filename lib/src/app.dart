@@ -30,7 +30,7 @@ class App extends StatelessWidget{
                 return LoginPage();
               case "/modify":
                 String id = settings.arguments;
-                return NoteModify(id);
+                return NoteModify(idNote: id,);
             }
           }
         );

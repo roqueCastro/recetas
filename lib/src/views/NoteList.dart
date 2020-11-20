@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:recetas/src/app.dart';
+import 'package:recetas/src/models/ApiResponse.dart';
 import 'package:recetas/src/models/Note.dart';
-import 'package:recetas/src/services/ServiceNote.dart';
+
+import 'package:recetas/src/services/ServicesApiNote.dart';
 import 'package:recetas/src/views/NoteDelete.dart';
+import 'package:recetas/src/views/NoteModify.dart';
 
 class NoteList extends StatefulWidget{
 
@@ -13,8 +15,13 @@ class NoteList extends StatefulWidget{
 
 class _NoteList extends State<NoteList> {
 
-  ServiceNote get servicesNote => GetIt.I<ServiceNote>();
-  List<Note> notes = [];
+  ServicesApiNote get services => GetIt.I<ServicesApiNote>();
+  // ServiceNote get servicesNote => GetIt.I<ServiceNote>();
+  // List<Note> notes = [];
+
+  ApiResponse<List<Note>> _apiResponse;
+
+  bool isLoading = false;
 
   String formatDateTime(DateTime dateTime){
     return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
@@ -25,44 +32,85 @@ class _NoteList extends State<NoteList> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Lista de notas"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () => _fetchNotes(),
+          ),
+        ],
       ),
-      body: ListView.separated(
-        separatorBuilder: (_, __) => Divider(height: 1, color: Colors.green,),
-        itemCount: notes.length,
-        itemBuilder: (_, index){
+      body: Builder(
+        builder: (_){
 
-          return Dismissible(
-            key: ValueKey(notes[index].id),
-            direction: DismissDirection.startToEnd,
-            onDismissed: (direccion){
+          if(isLoading){
+            return Center(
+              child: CircularProgressIndicator(
+                backgroundColor: Theme.of(context).primaryColor,
+                valueColor: new AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            );
+          }
 
-            },
-            confirmDismiss: (direciton)async{
-              final result = await showDialog(
-                context: context,
-                builder: (_) => NoteDelete(),
+          if(_apiResponse.error){
+            return Center(
+              child: Text(_apiResponse.errorMessage),
+            );
+        }
+
+          return ListView.separated(
+            separatorBuilder: (_, __) => Divider(height: 1, color: Colors.green,),
+            itemCount: _apiResponse.data.length,
+            itemBuilder: (_, index){
+
+              return Dismissible(
+                key: ValueKey(_apiResponse.data[index].id),
+                direction: DismissDirection.startToEnd,
+                onDismissed: (DismissDirection direccion) => dismissCard(_apiResponse.data[index]),
+                confirmDismiss: (direciton)async{
+                  final result = await showDialog(
+                    context: context,
+                    builder: (_) => NoteDelete(),
+                  );
+
+                  if(result){
+                    deleteNote(_apiResponse.data[index].id);
+                  }
+
+                  return result;
+                },
+                background: Container(
+                  color: Colors.red[300],
+                  child: Align(alignment: Alignment.centerLeft,child: Icon(Icons.delete, color:  Colors.white,),),
+                ),
+                child: ListTile(
+                  title: Text(_apiResponse.data[index].title, style: TextStyle(color: Theme.of(context).primaryColor),),
+                  subtitle: Text("Last edited on ${formatDateTime(_apiResponse.data[index].lastEditdateTime)}", ),
+                  onTap: (){
+                    // Navigator.of(context).pushNamed("/modify", arguments: _apiResponse.data[index].id);
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => NoteModify(
+                          idNote: _apiResponse.data[index].id))).then(
+                            (value) {
+                              _fetchNotes();
+                            });
+                  },
+                ),
               );
-
-              return result;
             },
-            background: Container(
-              color: Colors.red,
-              child: Align(alignment: Alignment.centerLeft,child: Icon(Icons.delete, color:  Colors.white,),),
-            ),
-            child: ListTile(
-              title: Text(notes[index].title, style: TextStyle(color: Theme.of(context).primaryColor),),
-              subtitle: Text("Last edited on ${formatDateTime(notes[index].lastEditdateTime)}", ),
-              onTap: (){
-                Navigator.of(context).pushNamed("/modify", arguments: notes[index].id);
-              },
-            ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: (){
-          Navigator.of(context).pushNamed("/modify");
+          // Navigator.of(context).pushNamed("/modify");
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => NoteModify(
+                  idNote: null))).then(
+                  (value) {
+                _fetchNotes();
+              });
+          //
         },
       ),
     );
@@ -74,9 +122,10 @@ class _NoteList extends State<NoteList> {
   @override
   void initState() {
     // TODO: implement initState
+    _fetchNotes();
     super.initState();
 
-    notes = servicesNote.getNoteList();
+    // notes = servicesNote.getNoteList();
   }
 
   @override
@@ -84,7 +133,69 @@ class _NoteList extends State<NoteList> {
     // TODO: implement dispose
     super.dispose();
   }
+
+  //OBTENER TODOS LOS PRODUCTOS WS
+  _fetchNotes() async{
+    setState(() {
+      isLoading = true;
+    });
+
+    _apiResponse = await services.getNotesList();
+
+    isLoading = false;
+
+
+    setState(() {
+      isLoading = false;
+    });
+
+  }
+
+  //ELIMINAR PRODUCTO DEL LIST
+  void dismissCard(Note note) {
+    if (_apiResponse.data.contains(note)) {
+      setState(() {
+        _apiResponse.data.remove(note);
+      });
+    }
+  }
+
+  //ELIMINAR WS
+  void deleteNote(String id) async{
+    final note = Note(
+        id: id,
+        title: "",
+        content: ""
+    );
+
+    final result = await services.deleteNote(note);
+
+
+    final title = 'Done';
+    final text  = result.error ? (result.errorMessage ?? 'An error occurred'): 'Eliminacion correcta.';
+
+    _showDialog(context, title, text);
+  }
+
+ //DIALOG
+  void _showDialog(BuildContext context, String title, String text) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(text),
+          actions: <Widget>[
+            FlatButton(onPressed: (){Navigator.of(context).pop();}, child: Text("Ok"))
+          ],
+        );
+      },
+      //presionar si se sale o no del dialog set disabled onPress
+      barrierDismissible: true,
+    );
+  }
 }
+
 
 
 
