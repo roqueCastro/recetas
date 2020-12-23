@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:recetas/src/views/Note/NoteList.dart';
 import 'package:recetas/src/views/Note/NoteModify.dart';
 import 'package:recetas/src/views/Search/Searched.dart';
+import 'package:recetas/src/views/Socks/HomePageSocks.dart';
 
 
 
@@ -32,6 +33,8 @@ class App extends StatelessWidget{
                 return NoteModify(idNote: id,);
               case "/food":
                 return Searched();
+              case "/socks":
+                return HomePageSocks();
 
 
               default:

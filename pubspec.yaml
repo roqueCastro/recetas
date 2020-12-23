@@ -69,6 +69,11 @@ flutter:
   - assets/images/cookbook.png
   - assets/images/logo.png
 
+  - assets/png/menu.png
+  - assets/png/calcetin.png
+  - assets/png/socks-one.png
+  - assets/png/socks-dos.png
+
   - assets/images/start.jpg
   - assets/images/uno.jpg
   - assets/images/dos.jpg

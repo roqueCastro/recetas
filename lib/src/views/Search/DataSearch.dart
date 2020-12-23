@@ -66,7 +66,15 @@ class DataSearch extends SearchDelegate<String>{
   @override
   Widget buildResults(BuildContext context) {
     //show some result based on the selection
-    throw UnimplementedError();
+    return Center(
+      child: Container(
+
+        child: Card(
+          color: Colors.red,
+          child: Text(query, style: TextStyle(color: Colors.white),),
+        ),
+      ),
+    );
   }
 
   @override
@@ -78,8 +86,7 @@ class DataSearch extends SearchDelegate<String>{
 
     return ListView.builder(
         itemCount: suggestionList.length,
-        itemBuilder: (context, i)
-        {
+        itemBuilder: (context, i){
           int idx = suggestionList[i].toLowerCase().indexOf(query.toLowerCase());
 
           bool isSpace = query.trim().isEmpty;
@@ -89,6 +96,11 @@ class DataSearch extends SearchDelegate<String>{
 
           return
             ListTile(
+              onTap: (){
+                query= suggestionList[i];
+                showResults(context);
+                // print("result query");
+              },
               leading: Icon(Icons.location_city),
               title: RichText(
                 text: TextSpan(

@@ -48,9 +48,10 @@ class _NoteList extends State<NoteList> {
                 ),
               ),
               const PopupMenuItem(
+                value: "socks",
                 child: ListTile(
-                  leading: Icon(Icons.anchor),
-                  title: Text('Item 2'),
+                  leading: Icon(Icons.format_shapes),
+                  title: Text('Socks'),
                 ),
               ),
               const PopupMenuItem(
@@ -243,6 +244,9 @@ class _NoteList extends State<NoteList> {
         return Navigator.of(context).pushNamed("/food");
       case "reload":
         return _fetchNotes();
+      case "socks":
+        return Navigator.of(context).pushNamed("/socks");
+
     }
   }
 }
