@@ -1,7 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:recetas/src/views/LoginPage.dart';
-import 'package:recetas/src/views/NoteList.dart';
-import 'package:recetas/src/views/NoteModify.dart';
+import 'package:recetas/src/views/Note/NoteList.dart';
+import 'package:recetas/src/views/Note/NoteModify.dart';
+import 'package:recetas/src/views/Search/Searched.dart';
 
 
 
@@ -26,11 +27,17 @@ class App extends StatelessWidget{
             switch(settings.name){
               case "/":
                 return NoteList();
-              case "/logueo":
-                return LoginPage();
               case "/modify":
                 String id = settings.arguments;
                 return NoteModify(idNote: id,);
+              case "/food":
+                return Searched();
+
+
+              default:
+                return Scaffold(body: Center(
+                  child: Text("Not route..!",style: TextStyle(color: Colors.red,fontWeight: FontWeight.bold,fontSize: 70),),
+                ),);
             }
           }
         );
